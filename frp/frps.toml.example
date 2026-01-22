@@ -1,0 +1,5 @@
+bindPort = 7000
+vhostHTTPPort = 8080
+subDomainHost = "strct.org"
+auth.method = "token"
+auth.token = "REPLACE_ME_ON_SERVER"

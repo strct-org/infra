@@ -1,0 +1,23 @@
+# --- Secrets & Configs ---
+.env
+*.env
+config.json
+frpc.toml
+frps.toml
+secrets.yaml
+
+# --- Binaries ---
+cloud-agent
+portal-api
+frpc
+frps
+
+# --- Data ---
+*.db
+*.sqlite
+data/
+
+# --- OS/IDE ---
+.DS_Store
+.vscode/
+.idea/

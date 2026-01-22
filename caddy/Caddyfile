@@ -1,0 +1,34 @@
+
+{
+    # Caddy ask the internal check endpoint
+    on_demand_tls {
+        ask http://localhost:5555/check
+    }
+}
+
+# Internal Permission Server
+http://localhost:5555 {
+    handle /check {
+        @valid expression {query.domain}.endsWith(".strct.org")
+
+        # If it matches, return 200
+        respond @valid 200
+
+        # Otherwise - 403
+        respond 403
+    }
+}
+
+# Main Proxy Configuration
+*.strct.org {
+    tls {
+        on_demand
+    }
+
+    reverse_proxy localhost:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+    }
+}
+
