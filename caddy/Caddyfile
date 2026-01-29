@@ -1,34 +1,55 @@
-
 {
-    # Caddy ask the internal check endpoint
-    on_demand_tls {
-        ask http://localhost:5555/check
-    }
+        # Global: Tell Caddy to ask the internal check endpoint before issuing certs
+        on_demand_tls {
+                ask http://localhost:5555/check
+        }
 }
 
-# Internal Permission Server
+# 1. Internal Auth Server (Validates subdomains)
 http://localhost:5555 {
-    handle /check {
-        @valid expression {query.domain}.endsWith(".strct.org")
-
-        # If it matches, return 200
-        respond @valid 200
-
-        # Otherwise - 403
-        respond 403
-    }
+        handle /check {
+                # Check if the domain ends with .strct.org
+                @valid expression {query.domain}.endsWith(".strct.org")
+                respond @valid 200
+                respond 403
+        }
 }
 
-# Main Proxy Configuration
-*.strct.org {
-    tls {
-        on_demand
-    }
+dev.strct.org, www.dev.strct.org, dev.portal.strct.org {
+        tls {
+                on_demand
+        }
+        reverse_proxy localhost:3001
+}
 
-    reverse_proxy localhost:8080 {
-        header_up Host {host}
-        header_up X-Real-IP {remote}
-        header_up X-Forwarded-For {remote}
-    }
+dev.api.strct.org {
+        tls {
+                on_demand
+        }
+        reverse_proxy localhost:4001
+}
+
+strct.org, www.strct.org, portal.strct.org {
+        reverse_proxy localhost:3000
+}
+
+api.strct.org {
+        reverse_proxy localhost:4000
+}
+
+dl.strct.org {
+        reverse_proxy localhost:8084
+}
+
+# 4. Device Tunnels -> FRP Server (Wildcard Catch-all)
+*.strct.org {
+        tls {
+                on_demand
+        }
+
+        reverse_proxy localhost:8080 {
+                header_up Host {host}
+                header_up X-Real-IP {remote}
+        }
 }
 
